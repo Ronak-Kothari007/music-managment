@@ -119,6 +119,19 @@ button {
   line-height: 1.45;
 }
 
+.autosave-note {
+  margin: 0;
+  padding: 10px 12px;
+  background: rgba(0, 107, 95, 0.15);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  color: #a6d8d1;
+  font-size: 0.81rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+}
+
 .workspace {
   padding: 28px;
   overflow: hidden;
