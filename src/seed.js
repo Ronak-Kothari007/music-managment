@@ -2,181 +2,171 @@ require('dotenv').config();
 
 const { connectToDatabase, closeDatabase, ObjectId } = require('./db');
 
+const artistTemplates = [
+  { name: 'Asha Rivers', country: 'India', genre: 'Indie Pop', monthlyListeners: 1842000 },
+  { name: 'Neon Tabla', country: 'India', genre: 'Electronic Fusion', monthlyListeners: 924000 },
+  { name: 'The Midnight Raag', country: 'United States', genre: 'Lo-fi', monthlyListeners: 618000 },
+  { name: 'Sofia Vale', country: 'Spain', genre: 'Acoustic', monthlyListeners: 402000 },
+  { name: 'Luna Horizon', country: 'United Kingdom', genre: 'Dream Pop', monthlyListeners: 720000 },
+  { name: 'Nova Dhawan', country: 'Canada', genre: 'Electronica', monthlyListeners: 310000 },
+  { name: 'Jai Beats', country: 'India', genre: 'Bollywood Funk', monthlyListeners: 540000 },
+  { name: 'Cairo Nights', country: 'Egypt', genre: 'World Fusion', monthlyListeners: 270000 },
+  { name: 'Velvet Echo', country: 'Australia', genre: 'Chillwave', monthlyListeners: 190000 },
+  { name: 'Sanjay & The Strings', country: 'India', genre: 'Acoustic Pop', monthlyListeners: 125000 }
+];
+
+const albumTitles = [
+  'City Monsoon', 'Circuit Sitar', 'After Hours Raga', 'Strings at Dawn',
+  'Moonlit Bazaar', 'Synthetic Sunrise', 'Oceanic Daydream', 'Midnight Calligraphy',
+  'Paper Lanterns', 'Starline Sessions', 'Electric Chai', 'Temple Groove',
+  'Desert Dusk', 'Mumbai Daydream', 'Neon Highway', 'Lotus Rhythm',
+  'Platinum Peacock', 'Neon Oasis', 'Raga Satellite', 'Whispering Sitar'
+];
+
+const songTitlePrefixes = [
+  'Rain on', 'Signal in', '2 AM', 'Paper', 'Bassline', 'Saffron', 'Velvet', 'Wandering',
+  'Midnight', 'Golden', 'Crimson', 'Electric', 'Dancing', 'Twilight', 'Sonic', 'Lotus',
+  'Canvas', 'Aurora', 'Hidden', 'Endless'
+];
+
+const songTitleSuffixes = [
+  'Marine Drive', 'Raag Yaman', 'Study Loop', 'Lanterns', 'Bazaar', 'Sky', 'Dreams', 'Route',
+  'Moon', 'Pulse', 'Temple', 'Oasis', 'Skyline', 'Sea', 'Fire', 'Rhythm', 'Waves', 'Mirage', 'Aura', 'Lights'
+];
+
+const userTemplates = [
+  { name: 'Maya Singh', plan: 'Student' },
+  { name: 'Aarav Mehta', plan: 'Free' },
+  { name: 'Priya Shah', plan: 'Premium' },
+  { name: 'Kavya Rao', plan: 'Premium' },
+  { name: 'Dev Patel', plan: 'Free' },
+  { name: 'Sara Kapoor', plan: 'Premium' },
+  { name: 'Ishaan Joshi', plan: 'Student' },
+  { name: 'Tanvi Sharma', plan: 'Free' },
+  { name: 'Rhea Nair', plan: 'Premium' },
+  { name: 'Aditya Verma', plan: 'Student' },
+  { name: 'Nina Bose', plan: 'Free' },
+  { name: 'Kabir Singh', plan: 'Premium' },
+  { name: 'Meera Gupta', plan: 'Student' },
+  { name: 'Ananya Chawla', plan: 'Premium' },
+  { name: 'Kabir Das', plan: 'Free' },
+  { name: 'Lina Desai', plan: 'Premium' },
+  { name: 'Rohan Mehra', plan: 'Student' },
+  { name: 'Zara Khan', plan: 'Premium' },
+  { name: 'Isha Patel', plan: 'Free' },
+  { name: 'Arjun Nair', plan: 'Premium' }
+];
+
+function makeId() {
+  return new ObjectId();
+}
+
+function randomItem(array) {
+  return array[Math.floor(Math.random() * array.length)];
+}
+
+function createArtists() {
+  return artistTemplates.map((template) => ({
+    _id: makeId(),
+    name: template.name,
+    country: template.country,
+    genre: template.genre,
+    monthlyListeners: template.monthlyListeners
+  }));
+}
+
+function createAlbums(artists) {
+  return artists.flatMap((artist, index) => {
+    const baseYear = 2022 + (index % 4);
+    return [
+      {
+        _id: makeId(),
+        title: albumTitles[(index * 2) % albumTitles.length],
+        artistId: artist._id,
+        releaseYear: baseYear,
+        label: `Label ${index + 1}`
+      },
+      {
+        _id: makeId(),
+        title: albumTitles[(index * 2 + 1) % albumTitles.length],
+        artistId: artist._id,
+        releaseYear: baseYear + 1,
+        label: `Label ${index + 1}`
+      }
+    ];
+  });
+}
+
+function createSongs(artists, albums) {
+  return albums.flatMap((album, index) => {
+    const artist = artists.find((item) => item._id.equals(album.artistId));
+    const songCount = 3;
+    return Array.from({ length: songCount }, (_, songIndex) => {
+      const title = `${randomItem(songTitlePrefixes)} ${randomItem(songTitleSuffixes)}`;
+      return {
+        _id: makeId(),
+        title,
+        artistId: artist._id,
+        albumId: album._id,
+        genre: artist.genre,
+        durationSeconds: 180 + ((index + songIndex) % 90),
+        language: artist.country === 'India' ? 'Hindi' : 'English',
+        explicit: (index + songIndex) % 7 === 0,
+        streams: 50000 + ((index + songIndex) * 12000)
+      };
+    });
+  });
+}
+
+function createUsers() {
+  return userTemplates.map((template, index) => ({
+    _id: makeId(),
+    name: template.name,
+    email: `${template.name.toLowerCase().replace(/\s+/g, '.')}@example.com`,
+    plan: template.plan,
+    status: index % 5 === 0 ? 'Trial' : 'Active',
+    joinedAt: new Date(2025, index % 12, 1 + (index % 28))
+  }));
+}
+
+function createPlaylists(users, songs) {
+  return users.slice(0, 12).map((user, index) => {
+    const playlistSongs = songs
+      .slice(index * 3, index * 3 + 6)
+      .map((song) => song._id);
+
+    return {
+      _id: makeId(),
+      name: `Playlist ${index + 1}`,
+      description: `Sample playlist ${index + 1} for ${user.name}`,
+      ownerId: user._id,
+      visibility: index % 3 === 0 ? 'Public' : 'Private',
+      songIds: playlistSongs.length ? playlistSongs : [songs[0]._id]
+    };
+  });
+}
+
+function createListens(users, songs) {
+  const listens = [];
+  for (let i = 0; i < 120; i += 1) {
+    const user = users[i % users.length];
+    const song = songs[i % songs.length];
+    listens.push({
+      userId: user._id,
+      songId: song._id,
+      listenedAt: new Date(2026, i % 12, 1 + (i % 28), 8 + (i % 12), (i * 5) % 60)
+    });
+  }
+  return listens;
+}
+
 async function seedDatabase(db) {
-  const artists = [
-    {
-      _id: new ObjectId(),
-      name: 'Asha Rivers',
-      country: 'India',
-      genre: 'Indie Pop',
-      monthlyListeners: 1842000
-    },
-    {
-      _id: new ObjectId(),
-      name: 'Neon Tabla',
-      country: 'India',
-      genre: 'Electronic Fusion',
-      monthlyListeners: 924000
-    },
-    {
-      _id: new ObjectId(),
-      name: 'The Midnight Raag',
-      country: 'United States',
-      genre: 'Lo-fi',
-      monthlyListeners: 618000
-    },
-    {
-      _id: new ObjectId(),
-      name: 'Sofia Vale',
-      country: 'Spain',
-      genre: 'Acoustic',
-      monthlyListeners: 402000
-    }
-  ];
-
-  const albums = [
-    {
-      _id: new ObjectId(),
-      title: 'City Monsoon',
-      artistId: artists[0]._id,
-      releaseYear: 2024,
-      label: 'Cloudline Records'
-    },
-    {
-      _id: new ObjectId(),
-      title: 'Circuit Sitar',
-      artistId: artists[1]._id,
-      releaseYear: 2025,
-      label: 'Pulse Foundry'
-    },
-    {
-      _id: new ObjectId(),
-      title: 'After Hours Raga',
-      artistId: artists[2]._id,
-      releaseYear: 2023,
-      label: 'Quiet Room'
-    },
-    {
-      _id: new ObjectId(),
-      title: 'Strings at Dawn',
-      artistId: artists[3]._id,
-      releaseYear: 2022,
-      label: 'North Sea Audio'
-    }
-  ];
-
-  const songs = [
-    {
-      _id: new ObjectId(),
-      title: 'Rain on Marine Drive',
-      artistId: artists[0]._id,
-      albumId: albums[0]._id,
-      genre: 'Indie Pop',
-      durationSeconds: 218,
-      language: 'Hindi',
-      explicit: false,
-      streams: 840000
-    },
-    {
-      _id: new ObjectId(),
-      title: 'Signal in Raag Yaman',
-      artistId: artists[1]._id,
-      albumId: albums[1]._id,
-      genre: 'Electronic Fusion',
-      durationSeconds: 241,
-      language: 'Instrumental',
-      explicit: false,
-      streams: 612000
-    },
-    {
-      _id: new ObjectId(),
-      title: '2 AM Study Loop',
-      artistId: artists[2]._id,
-      albumId: albums[2]._id,
-      genre: 'Lo-fi',
-      durationSeconds: 184,
-      language: 'Instrumental',
-      explicit: false,
-      streams: 1130000
-    },
-    {
-      _id: new ObjectId(),
-      title: 'Paper Lanterns',
-      artistId: artists[3]._id,
-      albumId: albums[3]._id,
-      genre: 'Acoustic',
-      durationSeconds: 206,
-      language: 'Spanish',
-      explicit: false,
-      streams: 275000
-    },
-    {
-      _id: new ObjectId(),
-      title: 'Bassline Bazaar',
-      artistId: artists[1]._id,
-      albumId: albums[1]._id,
-      genre: 'Electronic Fusion',
-      durationSeconds: 196,
-      language: 'Instrumental',
-      explicit: false,
-      streams: 499000
-    }
-  ];
-
-  const users = [
-    {
-      _id: new ObjectId(),
-      name: 'Ronak Shah',
-      email: 'ronak@example.com',
-      plan: 'Premium',
-      status: 'Active',
-      joinedAt: new Date('2025-08-04')
-    },
-    {
-      _id: new ObjectId(),
-      name: 'Maya Singh',
-      email: 'maya@example.com',
-      plan: 'Student',
-      status: 'Active',
-      joinedAt: new Date('2026-01-12')
-    },
-    {
-      _id: new ObjectId(),
-      name: 'Aarav Mehta',
-      email: 'aarav@example.com',
-      plan: 'Free',
-      status: 'Trial',
-      joinedAt: new Date('2026-03-18')
-    }
-  ];
-
-  const playlists = [
-    {
-      _id: new ObjectId(),
-      name: 'Focus Flow',
-      description: 'Calm tracks for studying and coding.',
-      ownerId: users[0]._id,
-      visibility: 'Public',
-      songIds: [songs[2]._id, songs[1]._id, songs[3]._id]
-    },
-    {
-      _id: new ObjectId(),
-      name: 'Mumbai Nights',
-      description: 'Late-night city pop and fusion.',
-      ownerId: users[1]._id,
-      visibility: 'Private',
-      songIds: [songs[0]._id, songs[4]._id]
-    }
-  ];
-
-  const listens = [
-    { userId: users[0]._id, songId: songs[2]._id, listenedAt: new Date('2026-04-21T18:30:00Z') },
-    { userId: users[0]._id, songId: songs[2]._id, listenedAt: new Date('2026-04-22T18:30:00Z') },
-    { userId: users[1]._id, songId: songs[0]._id, listenedAt: new Date('2026-04-23T13:15:00Z') },
-    { userId: users[1]._id, songId: songs[4]._id, listenedAt: new Date('2026-04-23T13:22:00Z') },
-    { userId: users[2]._id, songId: songs[1]._id, listenedAt: new Date('2026-04-24T05:45:00Z') },
-    { userId: users[2]._id, songId: songs[2]._id, listenedAt: new Date('2026-04-25T06:10:00Z') }
-  ];
+  const artists = createArtists();
+  const albums = createAlbums(artists);
+  const songs = createSongs(artists, albums);
+  const users = createUsers();
+  const playlists = createPlaylists(users, songs);
+  const listens = createListens(users, songs);
 
   await Promise.all([
     db.collection('artists').deleteMany({}),

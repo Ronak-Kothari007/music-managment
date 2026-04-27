@@ -10,6 +10,7 @@ const state = {
 
 const endpoints = ['artists', 'albums', 'songs', 'users', 'playlists'];
 const statusText = document.querySelector('#statusText');
+const autoSaveTimeouts = new Map();
 
 function setStatus(message) {
   statusText.textContent = message;
@@ -195,7 +196,7 @@ async function loadAll() {
     state[endpoint] = collections[index];
   });
   render();
-  setStatus('Connected to MongoDB backend.');
+  setStatus('Connected to MongoDB backend. Auto-save enabled.');
 }
 
 function formToObject(form) {
@@ -223,6 +224,39 @@ async function saveRecord(type, form) {
   form.reset();
   await loadAll();
   setStatus(`${type.slice(0, -1)} saved.`);
+}
+
+async function updateRecord(type, form) {
+  const payload = formToObject(form);
+  const id = payload._id;
+  if (!id) {
+    return;
+  }
+  delete payload._id;
+
+  await api(`/api/${type}/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload)
+  });
+}
+
+function scheduleAutoSave(type, form) {
+  const id = form.elements._id?.value;
+  if (!id) return;
+
+  const key = `${type}:${id}`;
+  clearTimeout(autoSaveTimeouts.get(key));
+  autoSaveTimeouts.set(key, setTimeout(async () => {
+    try {
+      await updateRecord(type, form);
+      await loadAll();
+      setStatus(`${type.slice(0, -1)} auto-saved.`);
+    } catch (error) {
+      setStatus(error.message);
+    } finally {
+      autoSaveTimeouts.delete(key);
+    }
+  }, 800));
 }
 
 function fillForm(form, record) {
@@ -298,9 +332,23 @@ document.querySelector('#listenForm').addEventListener('submit', async (event) =
   ['userForm', 'users'],
   ['playlistForm', 'playlists']
 ].forEach(([formId, type]) => {
-  document.querySelector(`#${formId}`).addEventListener('submit', async (event) => {
+  const form = document.querySelector(`#${formId}`);
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
     await saveRecord(type, event.currentTarget).catch((error) => setStatus(error.message));
+  });
+
+  form.addEventListener('change', () => {
+    scheduleAutoSave(type, form);
+  });
+
+  form.addEventListener('reset', () => {
+    const id = form.elements._id?.value;
+    if (id) {
+      const key = `${type}:${id}`;
+      clearTimeout(autoSaveTimeouts.get(key));
+      autoSaveTimeouts.delete(key);
+    }
   });
 });
 
