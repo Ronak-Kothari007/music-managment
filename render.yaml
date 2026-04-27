@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: music-app-management-system
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DB
+        value: music_app_management

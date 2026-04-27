@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Music App Management System</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div>
+        <p class="eyebrow">MongoDB Prototype</p>
+        <h1>Music App Management</h1>
+      </div>
+      <nav class="tabs" aria-label="Management sections">
+        <button class="tab active" data-tab="dashboard">Dashboard</button>
+        <button class="tab" data-tab="songs">Songs</button>
+        <button class="tab" data-tab="artists">Artists</button>
+        <button class="tab" data-tab="albums">Albums</button>
+        <button class="tab" data-tab="playlists">Playlists</button>
+        <button class="tab" data-tab="users">Users</button>
+      </nav>
+      <button class="seed-button" id="seedButton" type="button">Seed sample data</button>
+      <p class="status" id="statusText">Connecting to backend...</p>
+    </aside>
+
+    <main class="workspace">
+      <section class="view active" id="dashboardView">
+        <div class="view-header">
+          <div>
+            <p class="eyebrow">Live overview</p>
+            <h2>Streaming Operations</h2>
+          </div>
+          <button class="secondary" id="refreshButton" type="button">Refresh</button>
+        </div>
+        <div class="metrics" id="metrics"></div>
+        <div class="split">
+          <section>
+            <h3>Top songs by streams</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Song</th>
+                    <th>Artist</th>
+                    <th>Genre</th>
+                    <th>Streams</th>
+                  </tr>
+                </thead>
+                <tbody id="topSongsBody"></tbody>
+              </table>
+            </div>
+          </section>
+          <section>
+            <h3>Play simulation</h3>
+            <form id="listenForm" class="compact-form">
+              <label>
+                User
+                <select name="userId" required></select>
+              </label>
+              <label>
+                Song
+                <select name="songId" required></select>
+              </label>
+              <button type="submit">Record play</button>
+            </form>
+            <div class="report" id="playReport"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="songsView">
+        <div class="view-header">
+          <div>
+            <p class="eyebrow">Catalog</p>
+            <h2>Songs</h2>
+          </div>
+        </div>
+        <form id="songForm" class="editor-form">
+          <input type="hidden" name="_id">
+          <label>Title<input name="title" required></label>
+          <label>Artist<select name="artistId" required></select></label>
+          <label>Album<select name="albumId" required></select></label>
+          <label>Genre<input name="genre" required></label>
+          <label>Duration (seconds)<input name="durationSeconds" type="number" min="1" required></label>
+          <label>Language<input name="language" required></label>
+          <label>Streams<input name="streams" type="number" min="0" value="0"></label>
+          <label class="checkbox"><input name="explicit" type="checkbox"> Explicit</label>
+          <button type="submit">Save song</button>
+          <button class="secondary" type="reset">Clear</button>
+        </form>
+        <div class="table-wrap"><table id="songsTable"></table></div>
+      </section>
+
+      <section class="view" id="artistsView">
+        <div class="view-header">
+          <div>
+            <p class="eyebrow">Rights and metadata</p>
+            <h2>Artists</h2>
+          </div>
+        </div>
+        <form id="artistForm" class="editor-form">
+          <input type="hidden" name="_id">
+          <label>Name<input name="name" required></label>
+          <label>Country<input name="country" required></label>
+          <label>Primary genre<input name="genre" required></label>
+          <label>Monthly listeners<input name="monthlyListeners" type="number" min="0" value="0"></label>
+          <button type="submit">Save artist</button>
+          <button class="secondary" type="reset">Clear</button>
+        </form>
+        <div class="table-wrap"><table id="artistsTable"></table></div>
+      </section>
+
+      <section class="view" id="albumsView">
+        <div class="view-header">
+          <div>
+            <p class="eyebrow">Releases</p>
+            <h2>Albums</h2>
+          </div>
+        </div>
+        <form id="albumForm" class="editor-form">
+          <input type="hidden" name="_id">
+          <label>Title<input name="title" required></label>
+          <label>Artist<select name="artistId" required></select></label>
+          <label>Release year<input name="releaseYear" type="number" min="1900" max="2100" required></label>
+          <label>Label<input name="label"></label>
+          <button type="submit">Save album</button>
+          <button class="secondary" type="reset">Clear</button>
+        </form>
+        <div class="table-wrap"><table id="albumsTable"></table></div>
+      </section>
+
+      <section class="view" id="playlistsView">
+        <div class="view-header">
+          <div>
+            <p class="eyebrow">User curation</p>
+            <h2>Playlists</h2>
+          </div>
+        </div>
+        <form id="playlistForm" class="editor-form">
+          <input type="hidden" name="_id">
+          <label>Name<input name="name" required></label>
+          <label>Owner<select name="ownerId" required></select></label>
+          <label>Visibility<select name="visibility"><option>Public</option><option>Private</option></select></label>
+          <label>Description<input name="description"></label>
+          <label class="wide">Songs<select name="songIds" multiple size="5"></select></label>
+          <button type="submit">Save playlist</button>
+          <button class="secondary" type="reset">Clear</button>
+        </form>
+        <div class="table-wrap"><table id="playlistsTable"></table></div>
+      </section>
+
+      <section class="view" id="usersView">
+        <div class="view-header">
+          <div>
+            <p class="eyebrow">Subscribers</p>
+            <h2>Users</h2>
+          </div>
+        </div>
+        <form id="userForm" class="editor-form">
+          <input type="hidden" name="_id">
+          <label>Name<input name="name" required></label>
+          <label>Email<input name="email" type="email" required></label>
+          <label>Plan<select name="plan"><option>Free</option><option>Student</option><option>Premium</option><option>Family</option></select></label>
+          <label>Status<select name="status"><option>Active</option><option>Trial</option><option>Paused</option><option>Cancelled</option></select></label>
+          <label>Joined at<input name="joinedAt" type="date"></label>
+          <button type="submit">Save user</button>
+          <button class="secondary" type="reset">Clear</button>
+        </form>
+        <div class="table-wrap"><table id="usersTable"></table></div>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

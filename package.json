@@ -1,0 +1,29 @@
+{
+  "name": "music-app-management-system",
+  "version": "1.0.0",
+  "description": "MongoDB-backed DBMS prototype for managing a music streaming application.",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "seed": "node src/seed.js",
+    "check": "node --check src/server.js && node --check src/db.js && node --check src/seed.js && node --check public/app.js"
+  },
+  "keywords": [
+    "mongodb",
+    "dbms",
+    "music",
+    "management-system"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mongodb": "^6.12.0"
+  }
+}
